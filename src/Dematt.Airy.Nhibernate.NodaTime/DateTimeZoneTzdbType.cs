@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Data;
+using System.Data.Common;
 using NHibernate;
+using NHibernate.Engine;
 using NHibernate.SqlTypes;
 using NHibernate.UserTypes;
 using NodaTime;
@@ -29,9 +31,9 @@ namespace Dematt.Airy.Nhibernate.NodaTime
             return x == null ? 0 : x.GetHashCode();
         }
 
-        public object NullSafeGet(IDataReader rs, string[] names, object owner)
+        public object NullSafeGet(DbDataReader rs, string[] names, ISessionImplementor session, object owner)
         {
-            var value = NHibernateUtil.String.NullSafeGet(rs, names);
+            var value = NHibernateUtil.String.NullSafeGet(rs, names, session, owner);
             if (value == null)
             {
                 return null;
@@ -39,15 +41,15 @@ namespace Dematt.Airy.Nhibernate.NodaTime
             return DateTimeZoneProviders.Tzdb.GetZoneOrNull((string)value);
         }
 
-        public void NullSafeSet(IDbCommand cmd, object value, int index)
+        public void NullSafeSet(DbCommand cmd, object value, int index, ISessionImplementor session)
         {
             if (value == null)
             {
-                NHibernateUtil.String.NullSafeSet(cmd, null, index);
+                NHibernateUtil.String.NullSafeSet(cmd, null, index, session);
             }
             else
             {
-                NHibernateUtil.String.NullSafeSet(cmd, ((DateTimeZone)value).Id, index);
+                NHibernateUtil.String.NullSafeSet(cmd, ((DateTimeZone)value).Id, index, session);
             }
         }
     }

@@ -21,6 +21,8 @@ namespace Dematt.Airy.Tests.NodaTime
     /// </remarks>
     public class DateTimeOffsetTests : PersistenceTest
     {
+        private Instant _now => TestClock.GetCurrentInstant();
+
         /// <summary>
         /// Can we create a ZonedDateTime from a DateTimeOffset and a DateTimeZone.
         /// </summary>
@@ -55,8 +57,7 @@ namespace Dematt.Airy.Tests.NodaTime
         public void Can_RoundTrip_A_ZonedDateTime_To_DateTimeOffset_And_Back()
         {
             var systemDateTimeZone = DateTimeZoneProviders.Tzdb.GetSystemDefault();
-            Instant now = TestClock.Now;
-            var zonedDateTimeNow = new ZonedDateTime(now, systemDateTimeZone);
+            var zonedDateTimeNow = new ZonedDateTime(_now, systemDateTimeZone);
             var dateTimeOffsetNow = zonedDateTimeNow.ToDateTimeOffset();
             var zondedDateTimeRoundTripped = dateTimeOffsetNow.ToZonedDateTime(systemDateTimeZone);
 
@@ -71,8 +72,7 @@ namespace Dematt.Airy.Tests.NodaTime
         public void Can_RoundTrip_A_ZonedDateTime_To_DateTimeOffset_Using_Persistence()
         {
             var systemDateTimeZone = DateTimeZoneProviders.Tzdb.GetSystemDefault();
-            Instant now = TestClock.Now;
-            var zonedDateTimeStart = new ZonedDateTime(now, systemDateTimeZone);
+            var zonedDateTimeStart = new ZonedDateTime(_now, systemDateTimeZone);
             var zonedDateTimeFinish = zonedDateTimeStart.Plus(Duration.FromMinutes(60));
 
             var testLocation = new LocationTestEntity

@@ -13,6 +13,8 @@ namespace Dematt.Airy.Tests.NodaTime
     /// </summary>
     public class LocalDateTests : PersistenceTest
     {
+        private Instant _now => TestClock.GetCurrentInstant();
+
         /// <summary>
         /// Can we write a LocalDate stored as a date.
         /// </summary>
@@ -23,7 +25,7 @@ namespace Dematt.Airy.Tests.NodaTime
             using (ITransaction transaction = session.BeginTransaction())
             {
                 var timeZone = DateTimeZoneProviders.Tzdb.GetSystemDefault();
-                LocalDate startLocalDate = TestClock.Now.InZone(timeZone).Date;
+                LocalDate startLocalDate = _now.InZone(timeZone).Date;
                 var testEvent = new LocalDateTestEntity
                 {
                     Description = "Can_Write_LocalDate_Stored_As_Date",
@@ -42,7 +44,7 @@ namespace Dematt.Airy.Tests.NodaTime
         public void Can_Write_And_Read_LocalDate_Stored_As_Date()
         {
             var timeZone = DateTimeZoneProviders.Tzdb.GetSystemDefault();
-            LocalDate startLocalDate = TestClock.Now.InZone(timeZone).Date;
+            LocalDate startLocalDate = _now.InZone(timeZone).Date;
             LocalDate finishLocalDate = startLocalDate.PlusDays(1);
             var testEvent = new LocalDateTestEntity
             {
@@ -78,7 +80,7 @@ namespace Dematt.Airy.Tests.NodaTime
         public void Can_Write_And_Read_A_Null_LocalDate_Stored_As_Date()
         {
             var timeZone = DateTimeZoneProviders.Tzdb.GetSystemDefault();
-            LocalDate startLocalDate = TestClock.Now.InZone(timeZone).Date;
+            LocalDate startLocalDate = _now.InZone(timeZone).Date;
             var testEvent = new LocalDateTestEntity
             {
                 Description = "Can_Write_And_Read_A_Null_LocalDate_Stored_As_Date",
@@ -112,7 +114,7 @@ namespace Dematt.Airy.Tests.NodaTime
         public void Can_Query_By_Equals_LocalDate_Stored_As_Date()
         {
             var timeZone = DateTimeZoneProviders.Tzdb.GetSystemDefault();
-            LocalDate startLocalDate = TestClock.Now.InZone(timeZone).Date;
+            LocalDate startLocalDate = _now.InZone(timeZone).Date;
             LocalDate finishLocalDate = startLocalDate.PlusDays(1);
             var testEvent = new LocalDateTestEntity
             {
@@ -157,7 +159,7 @@ namespace Dematt.Airy.Tests.NodaTime
         public void Can_Query_By_LessThan_LocalDate_Stored_As_Date()
         {
             var timeZone = DateTimeZoneProviders.Tzdb.GetSystemDefault();
-            LocalDate startLocalDate = TestClock.Now.InZone(timeZone).Date.Minus(Period.FromWeeks(1));
+            LocalDate startLocalDate = _now.InZone(timeZone).Date.Minus(Period.FromWeeks(1));
             LocalDate finishLocalDate = startLocalDate.PlusDays(3);
             var testEvent = new LocalDateTestEntity
             {
@@ -204,7 +206,7 @@ namespace Dematt.Airy.Tests.NodaTime
         public void Can_Query_By_GreaterThan_LocalDate_Stored_As_Date()
         {
             var timeZone = DateTimeZoneProviders.Tzdb.GetSystemDefault();
-            LocalDate startLocalDate = TestClock.Now.InZone(timeZone).Date.Plus(Period.FromWeeks(1));
+            LocalDate startLocalDate = _now.InZone(timeZone).Date.Plus(Period.FromWeeks(1));
             LocalDate finishLocalDate = startLocalDate.PlusDays(3);
             var testEvent = new LocalDateTestEntity
             {

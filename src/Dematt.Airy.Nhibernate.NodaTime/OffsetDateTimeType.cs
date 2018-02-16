@@ -1,9 +1,10 @@
-﻿using System;
-using System.Data;
-using NHibernate;
+﻿using NHibernate;
+using NHibernate.Engine;
 using NHibernate.SqlTypes;
 using NHibernate.UserTypes;
 using NodaTime;
+using System;
+using System.Data.Common;
 
 namespace Dematt.Airy.Nhibernate.NodaTime
 {
@@ -31,9 +32,9 @@ namespace Dematt.Airy.Nhibernate.NodaTime
             return x == null ? 0 : ((OffsetDateTime)x).ToInstant().GetHashCode();
         }
 
-        public object NullSafeGet(IDataReader rs, string[] names, object owner)
+        public object NullSafeGet(DbDataReader rs, string[] names, ISessionImplementor session, object owner)
         {
-            var value = NHibernateUtil.DateTimeOffset.NullSafeGet(rs, names);
+            var value = NHibernateUtil.DateTimeOffset.NullSafeGet(rs, names, session, owner);
             if (value == null)
             {
                 return null;
@@ -41,15 +42,15 @@ namespace Dematt.Airy.Nhibernate.NodaTime
             return OffsetDateTime.FromDateTimeOffset((DateTimeOffset)value);
         }
 
-        public void NullSafeSet(IDbCommand cmd, object value, int index)
+        public void NullSafeSet(DbCommand cmd, object value, int index, ISessionImplementor session)
         {
             if (value == null)
             {
-                NHibernateUtil.DateTimeOffset.NullSafeSet(cmd, null, index);
+                NHibernateUtil.DateTimeOffset.NullSafeSet(cmd, null, index, session);
             }
             else
             {
-                NHibernateUtil.DateTimeOffset.NullSafeSet(cmd, ((OffsetDateTime)value).ToDateTimeOffset(), index);
+                NHibernateUtil.DateTimeOffset.NullSafeSet(cmd, ((OffsetDateTime)value).ToDateTimeOffset(), index, session);
             }
         }
     }

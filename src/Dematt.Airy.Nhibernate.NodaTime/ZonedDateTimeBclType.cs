@@ -1,10 +1,10 @@
-﻿using System;
-using System.Data;
-using Dematt.Airy.Nhibernate.NodaTime.Extensions;
+﻿using Dematt.Airy.Nhibernate.NodaTime.Extensions;
 using NHibernate;
 using NHibernate.Engine;
 using NHibernate.UserTypes;
 using NodaTime;
+using System;
+using System.Data.Common;
 
 namespace Dematt.Airy.Nhibernate.NodaTime
 {
@@ -27,7 +27,7 @@ namespace Dematt.Airy.Nhibernate.NodaTime
         /// <param name="session">The session</param>
         /// <param name="owner">The containing entity</param>
         /// <returns>An instance of the <see cref="DateTimeOffset"/> class or null.</returns>
-        public object NullSafeGet(IDataReader dr, string[] names, ISessionImplementor session, object owner)
+        public object NullSafeGet(DbDataReader dr, string[] names, ISessionImplementor session, object owner)
         {
             var dateTimeOffset = (DateTimeOffset?)NHibernateUtil.DateTimeOffset.NullSafeGet(dr, names[0], session, owner);
             var timeZone = (string)NHibernateUtil.String.NullSafeGet(dr, names[1], session, owner);
@@ -38,6 +38,22 @@ namespace Dematt.Airy.Nhibernate.NodaTime
             }
 
             return dateTimeOffset.ToZonedDateTime(DateTimeZoneProviders.Bcl.GetZoneOrNull(timeZone));
+        }
+
+        public void NullSafeSet(DbCommand cmd, object value, int index, bool[] settable, ISessionImplementor session)
+        {
+            if (value == null)
+            {
+                NHibernateUtil.DateTimeOffset.NullSafeSet(cmd, null, index, session);
+                NHibernateUtil.String.NullSafeSet(cmd, null, index + 1, session);
+            }
+            else
+            {
+                var zonedDateTime = (ZonedDateTime)value;
+                PropertyTypes[0].NullSafeSet(cmd, zonedDateTime.ToDateTimeOffset(), index, session);
+                PropertyTypes[1].NullSafeSet(cmd, zonedDateTime.Zone.Id, index + 1, session);
+
+            }
         }
     }
 }

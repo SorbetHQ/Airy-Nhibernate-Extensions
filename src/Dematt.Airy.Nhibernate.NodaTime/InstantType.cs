@@ -1,9 +1,10 @@
-﻿using System;
-using System.Data;
-using NHibernate;
+﻿using NHibernate;
+using NHibernate.Engine;
 using NHibernate.SqlTypes;
 using NHibernate.UserTypes;
 using NodaTime;
+using System;
+using System.Data.Common;
 
 namespace Dematt.Airy.Nhibernate.NodaTime
 {
@@ -29,25 +30,27 @@ namespace Dematt.Airy.Nhibernate.NodaTime
             return x == null ? 0 : x.GetHashCode();
         }
 
-        public object NullSafeGet(IDataReader rs, string[] names, object owner)
+        public object NullSafeGet(DbDataReader rs, string[] names, ISessionImplementor session, object owner)
         {
-            var value = NHibernateUtil.Int64.NullSafeGet(rs, names);
+            var value = NHibernateUtil.Int64.NullSafeGet(rs, names, session, owner);
             if (value == null)
             {
                 return null;
             }
-            return new Instant((long)value);
+
+            var instant = Instant.FromUnixTimeTicks((long) value);
+            return instant;
         }
 
-        public void NullSafeSet(IDbCommand cmd, object value, int index)
+        public void NullSafeSet(DbCommand cmd, object value, int index, ISessionImplementor session)
         {
             if (value == null)
             {
-                NHibernateUtil.Int64.NullSafeSet(cmd, null, index);
+                NHibernateUtil.Int64.NullSafeSet(cmd, null, index, session);
             }
             else
             {
-                NHibernateUtil.Int64.NullSafeSet(cmd, ((Instant)value).Ticks, index);
+                NHibernateUtil.Int64.NullSafeSet(cmd, ((Instant)value).ToDateTimeOffset().Ticks, index, session);
             }
         }
     }

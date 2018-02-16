@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Data;
+using System.Data.Common;
 using NHibernate;
 using NHibernate.Engine;
 using NHibernate.Type;
@@ -78,6 +79,53 @@ namespace Dematt.Airy.Nhibernate.NodaMoney
         }
 
         /// <summary>
+        /// Retrieve an instance of the mapped class from a IDataReader. We need to handle possibility of null values.
+        /// </summary>
+        /// <param name="dr">An object that implements DbDataReader</param>
+        /// <param name="names">The column names</param>
+        /// <param name="session">The session</param>
+        /// <param name="owner">The containing entity</param>
+        /// <returns>An instance of the <see cref="DateTimeOffset"/> class or null.</returns>
+        public object NullSafeGet(DbDataReader dr, string[] names, ISessionImplementor session, object owner)
+        {
+            var amount = (Decimal?)NHibernateUtil.Decimal.NullSafeGet(dr, names[0], session, owner);
+            var currency = (string)NHibernateUtil.String.NullSafeGet(dr, names[1], session, owner);
+
+            if (amount == null || currency == null)
+            {
+                return null;
+            }
+
+            return new Money(amount.Value, Currency.FromCode(currency));
+        }
+
+        /// <summary>
+        /// Write an instance of the mapped class to a prepared statement. We should handle possibility of null values.
+        /// A multi-column type should be written to parameters starting from index.
+        /// If a property is not settable, skip it and don't increment the index.
+        /// </summary>
+        /// <param name="cmd">The command used for writing the value.</param>
+        /// <param name="value">The value to write.</param>
+        /// <param name="index">The parameters index to start at.</param>
+        /// <param name="settable">Array indicating which properties are settable</param>
+        /// <param name="session">The session.</param>
+        public void NullSafeSet(DbCommand cmd, object value, int index, bool[] settable, ISessionImplementor session)
+        {
+            if (value == null)
+            {
+                NHibernateUtil.Decimal.NullSafeSet(cmd, null, index, session);
+                NHibernateUtil.String.NullSafeSet(cmd, null, index + 1, session);
+            }
+            else
+            {
+                var money = (Money)value;
+                PropertyTypes[0].NullSafeSet(cmd, money.Amount, index, session);
+                PropertyTypes[1].NullSafeSet(cmd, money.Currency.Code, index + 1, session);
+
+            }
+        }
+
+        /// <summary>
         /// Gets the value of a property.
         /// </summary>
         /// <param name="component">An instance of the class mapped by this "type".</param>
@@ -112,33 +160,7 @@ namespace Dematt.Airy.Nhibernate.NodaMoney
         {
             throw new InvalidOperationException("Money is an immutable object. SetPropertyValue isn't supported.");
         }
-
-        /// <summary>
-        /// Write an instance of the mapped class to a prepared statement. We should handle possibility of null values.
-        /// A multi-column type should be written to parameters starting from index.
-        /// If a property is not settable, skip it and don't increment the index.
-        /// </summary>
-        /// <param name="cmd">The command used for writing the value.</param>
-        /// <param name="value">The value to write.</param>
-        /// <param name="index">The parameters index to start at.</param>
-        /// <param name="settable">Array indicating which properties are settable</param>
-        /// <param name="session">The session.</param>
-        public void NullSafeSet(IDbCommand cmd, object value, int index, bool[] settable, ISessionImplementor session)
-        {
-            if (value == null)
-            {
-                NHibernateUtil.Decimal.NullSafeSet(cmd, null, index);
-                NHibernateUtil.String.NullSafeSet(cmd, null, index + 1);
-            }
-            else
-            {
-                var money = (Money)value;
-                PropertyTypes[0].NullSafeSet(cmd, money.Amount, index, session);
-                PropertyTypes[1].NullSafeSet(cmd, money.Currency.Code, index + 1, session);
-
-            }
-        }
-
+        
         /// <summary>
         /// Retrieve an instance of the mapped class from a IDataReader. We need to handle possibility of null values.
         /// </summary>
@@ -147,18 +169,18 @@ namespace Dematt.Airy.Nhibernate.NodaMoney
         /// <param name="session">The session</param>
         /// <param name="owner">The containing entity</param>
         /// <returns>An instance of the <see cref="DateTimeOffset"/> class or null.</returns>
-        public object NullSafeGet(IDataReader dr, string[] names, ISessionImplementor session, object owner)
-        {
-            var amount = (Decimal?)NHibernateUtil.Decimal.NullSafeGet(dr, names[0], session, owner);
-            var currency = (string)NHibernateUtil.String.NullSafeGet(dr, names[1], session, owner);
+        //public object NullSafeGet(IDataReader dr, string[] names, ISessionImplementor session, object owner)
+        //{
+        //    var amount = (Decimal?)NHibernateUtil.Decimal.NullSafeGet(dr, names[0], session, owner);
+        //    var currency = (string)NHibernateUtil.String.NullSafeGet(dr, names[1], session, owner);
 
-            if (amount == null || currency == null)
-            {
-                return null;
-            }
+        //    if (amount == null || currency == null)
+        //    {
+        //        return null;
+        //    }
 
-            return new Money(amount.Value, Currency.FromCode(currency));
-        }
+        //    return new Money(amount.Value, Currency.FromCode(currency));
+        //}
 
         /// <summary>
         /// Tries to cast an unknown object to a <see cref="Money"/> object.

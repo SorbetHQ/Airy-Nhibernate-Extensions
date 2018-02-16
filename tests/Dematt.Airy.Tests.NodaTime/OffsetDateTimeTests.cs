@@ -14,6 +14,8 @@ namespace Dematt.Airy.Tests.NodaTime
     /// </summary>
     public class OffsetDateTimeTests : PersistenceTest
     {
+        private Instant _now => TestClock.GetCurrentInstant();
+
         /// <summary>
         /// Can we write a OffsetDateTime stored as a DateTimeOffset.
         /// </summary>
@@ -24,8 +26,7 @@ namespace Dematt.Airy.Tests.NodaTime
             using (ITransaction transaction = session.BeginTransaction())
             {
                 var timeZone = DateTimeZoneProviders.Tzdb.GetSystemDefault();
-                Instant now = TestClock.Now;
-                ZonedDateTime zonedNowDateTime = now.InZone(timeZone);
+                ZonedDateTime zonedNowDateTime = _now.InZone(timeZone);
 
                 var testEvent = new OffsetDateTimeTestEntity
                 {
@@ -50,8 +51,7 @@ namespace Dematt.Airy.Tests.NodaTime
             using (ITransaction transaction = session.BeginTransaction())
             {
                 var timeZone = DateTimeZoneProviders.Tzdb.GetSystemDefault();
-                Instant now = TestClock.Now;
-                ZonedDateTime zonedNowDateTime = now.InZone(timeZone);
+                ZonedDateTime zonedNowDateTime = _now.InZone(timeZone);
                 var zonedFinishDateTime = zonedNowDateTime.Plus(Duration.FromMinutes(60));
 
                 var testEvent = new OffsetDateTimeTestEntity
@@ -76,8 +76,7 @@ namespace Dematt.Airy.Tests.NodaTime
         public void Can_Write_And_Read_OffsetDateTime_Stored_As_DateTimeOffset()
         {
             var timeZone = DateTimeZoneProviders.Tzdb.GetSystemDefault();
-            Instant now = TestClock.Now;
-            ZonedDateTime zonedNowDateTime = now.InZone(timeZone);
+            ZonedDateTime zonedNowDateTime = _now.InZone(timeZone);
             var testEvent = new OffsetDateTimeTestEntity
             {
                 Description = "Can_Write_And_Read_OffsetDateTime_Stored_As_DateTimeOffset",
@@ -120,8 +119,7 @@ namespace Dematt.Airy.Tests.NodaTime
         public void Can_Query_By_Equals_OffsetDateTime_Stored_As_DateTimeOffset()
         {
             var timeZone = DateTimeZoneProviders.Tzdb.GetSystemDefault();
-            Instant now = TestClock.Now;
-            ZonedDateTime zonedNowDateTime = now.InZone(timeZone);
+            ZonedDateTime zonedNowDateTime = _now.InZone(timeZone);
 
             var zonedFinishDateTime = zonedNowDateTime.Plus(Duration.FromMinutes(60));
             var offsetFinishTime = new OffsetDateTime(zonedFinishDateTime.LocalDateTime, zonedFinishDateTime.Offset);

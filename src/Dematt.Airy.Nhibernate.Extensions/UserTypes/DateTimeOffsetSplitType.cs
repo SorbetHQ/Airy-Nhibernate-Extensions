@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Data;
+using System.Data.Common;
 using System.Diagnostics.CodeAnalysis;
 using NHibernate;
 using NHibernate.Engine;
@@ -125,21 +126,21 @@ namespace Dematt.Airy.Nhibernate.Extensions.UserTypes
         /// <summary>
         /// Retrieve an instance of the mapped class from a IDataReader. We need to handle possibility of null values.
         /// </summary>
-        /// <param name="dr">An object that implements IDataReader</param>
+        /// <param name="dr">An object that implements DbDataReader</param>
         /// <param name="names">The column names</param>
         /// <param name="session">The session</param>
         /// <param name="owner">The containing entity</param>
         /// <returns>An instance of the <see cref="DateTimeOffset"/> class or null.</returns>
-        public object NullSafeGet(IDataReader dr, string[] names, ISessionImplementor session, object owner)
+        public object NullSafeGet(DbDataReader dr, string[] names, ISessionImplementor session, object owner)
         {
-            var dateTime = NHibernateUtil.DateTime.NullSafeGet(dr, names[0]);
-            var offset = NHibernateUtil.Int32.NullSafeGet(dr, names[1]);
+            var dateTime = NHibernateUtil.DateTime.NullSafeGet(dr, names[0], session, owner);
+            var offset = NHibernateUtil.Int32.NullSafeGet(dr, names[1], session, owner);
             if (dateTime == null)
             {
                 return null;
             }
 
-            var timeSpan = offset == null ? new TimeSpan(0, 0, 0) : new TimeSpan(0, (int)offset, 0);
+            var timeSpan = offset == null ? new TimeSpan(0, 0, 0) : new TimeSpan(0, (int) offset, 0);
             return new DateTimeOffset((DateTime)dateTime, timeSpan);
         }
 
@@ -153,7 +154,7 @@ namespace Dematt.Airy.Nhibernate.Extensions.UserTypes
         /// <param name="index">The parameters index to start at.</param>
         /// <param name="settable">Array indicating which properties are settable</param>
         /// <param name="session">The session.</param>
-        public void NullSafeSet(IDbCommand cmd, object value, int index, bool[] settable, ISessionImplementor session)
+        public void NullSafeSet(DbCommand cmd, object value, int index, bool[] settable, ISessionImplementor session)
         {
             if (value == null)
             {
@@ -169,7 +170,7 @@ namespace Dematt.Airy.Nhibernate.Extensions.UserTypes
                     dateTimeOffset == null ? DBNull.Value : (object)dateTimeOffset.Value.Offset.TotalMinutes;
             }
         }
-
+        
         /// <summary>
         /// Return a deep copy of the persistent state, stopping at entities and at collections.
         /// </summary>
